@@ -1,0 +1,164 @@
+111<!-- upload.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Upload CSV – GREEN Intel</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #e0f2d8, #c8e6c9);
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .upload-card {
+      max-width: 600px;
+      margin: auto;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress {
+      display: none;
+    }
+
+    .preview-table th {
+      background: #a5d6a7;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container my-5">
+    <div class="card upload-card p-4">
+
+      <h3 class="text-center text-success mb-2">🌱 Upload Soil Data</h3>
+      <p class="text-center text-muted">
+        Expected columns:
+        <strong>N, P, K, temperature, humidity, ph, rainfall</strong>
+      </p>
+
+      <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" onsubmit="startUpload()">
+
+        <input type="file" name="file" id="csvFile" accept=".csv" class="form-control mb-3" onchange="validateFile()"
+          required>
+
+        <div id="fileInfo" class="text-muted small mb-2"></div>
+
+        <div class="progress mb-3">
+          <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width:100%">
+            Uploading...
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" id="uploadBtn" class="btn btn-success w-100" disabled>
+            Upload CSV
+          </button>
+          <button type="button" class="btn btn-outline-secondary" onclick="resetFile()">
+            Reset
+          </button>
+        </div>
+
+      </form>
+
+      <!-- CSV PREVIEW -->
+      <div id="csvPreview" class="mt-4 d-none">
+        <h6 class="text-success">📊 CSV Preview (first 5 rows)</h6>
+        <div class="table-responsive">
+          <table class="table table-bordered preview-table">
+            <thead id="previewHead"></thead>
+            <tbody id="previewBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      {% if upload_result %}
+      <div class="alert alert-info mt-4 text-center">
+        {{ upload_result }}
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <script>
+    const REQUIRED_COLS = ["n", "p", "k", "temperature", "humidity", "ph", "rainfall"];
+
+    function validateFile() {
+      const input = document.getElementById("csvFile");
+      const btn = document.getElementById("uploadBtn");
+      const info = document.getElementById("fileInfo");
+      const file = input.files[0];
+
+      if (!file) return;
+
+      if (!file.name.endsWith(".csv")) {
+        alert("Only CSV files allowed!");
+        resetFile();
+        return;
+      }
+
+      if (file.size > 2 * 1024 * 1024) {
+        alert("File must be under 2MB");
+        resetFile();
+        return;
+      }
+
+      info.innerHTML = `📄 <b>${file.name}</b> (${(file.size / 1024).toFixed(1)} KB)`;
+      readCSV(file);
+    }
+
+    function readCSV(file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const rows = e.target.result.trim().split("\n").slice(0, 6);
+        const headers = rows[0].split(",").map(h => h.trim().toLowerCase());
+
+        const missing = REQUIRED_COLS.filter(c => !headers.includes(c));
+        if (missing.length) {
+          alert("Missing columns: " + missing.join(", "));
+          resetFile();
+          return;
+        }
+
+        showPreview(rows);
+        document.getElementById("uploadBtn").disabled = false;
+      };
+      reader.readAsText(file);
+    }
+
+    function showPreview(rows) {
+      document.getElementById("csvPreview").classList.remove("d-none");
+      const head = document.getElementById("previewHead");
+      const body = document.getElementById("previewBody");
+      head.innerHTML = "";
+      body.innerHTML = "";
+
+      const headers = rows[0].split(",");
+      head.innerHTML = "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
+
+      rows.slice(1).forEach(r => {
+        body.innerHTML += "<tr>" + r.split(",").map(c => `<td>${c}</td>`).join("") + "</tr>";
+      });
+    }
+
+    function resetFile() {
+      document.getElementById("csvFile").value = "";
+      document.getElementById("fileInfo").innerHTML = "";
+      document.getElementById("uploadBtn").disabled = true;
+      document.getElementById("csvPreview").classList.add("d-none");
+    }
+
+    function startUpload() {
+      document.querySelector(".progress").style.display = "block";
+    }
+  </script>
+
+</body>
+
+</html>

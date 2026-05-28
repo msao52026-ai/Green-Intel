@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MSP Trends – GreenIntel</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        body {
+            background: linear-gradient(to right, #e8f5e9, #f1f8e9);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .navbar {
+            background-color: #2e7d32;
+        }
+
+        .navbar-brand,
+        .nav-link {
+            color: #fff !important;
+        }
+
+        .nav-link.active {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        h1 {
+            color: #2e7d32;
+            font-weight: 700;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            background-color: #ffffffea;
+        }
+
+        .table thead th {
+            background-color: #a5d6a7;
+            color: #1b5e20;
+            text-align: center;
+        }
+
+        .table tbody td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        footer {
+            background-color: #2e7d32;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar (consistent across GreenIntel) -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}">🌿 GreenIntel</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('predict') }}">Predict Crop</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('analysis') }}">Soil Analysis</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('supervised') }}">ML Models</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('cube') }}">Cube Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="{{ url_for('msp') }}">MSP Trends</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+
+        <!-- Page Header -->
+        <div class="text-center mb-4">
+            <h1><i class="fas fa-chart-line me-2"></i>Minimum Support Price (MSP) Trends</h1>
+            <p class="lead">Historical MSP rates (₹/quintal) for major Kharif crops</p>
+        </div>
+
+        <!-- Data Table -->
+        <div class="card p-4 mb-4">
+            <h4 class="mb-3">📊 MSP Rate Evolution (2013‑14 to 2024‑25)</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Commodity</th>
+                            <th>2013‑14</th>
+                            <th>2014‑15</th>
+                            <th>2015‑16</th>
+                            <th>2016‑17</th>
+                            <th>2017‑18</th>
+                            <th>2018‑19</th>
+                            <th>2019‑20</th>
+                            <th>2020‑21</th>
+                            <th>2021‑22</th>
+                            <th>2022‑23</th>
+                            <th>2023‑24</th>
+                            <th>2024‑25</th>
+                            <th>% Increase<br>(2013‑14 → 2024‑25)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Paddy (Common)</td>
+                            <td>1310</td>
+                            <td>1360</td>
+                            <td>1410</td>
+                            <td>1470</td>
+                            <td>1550</td>
+                            <td>1750</td>
+                            <td>1815</td>
+                            <td>1868</td>
+                            <td>1940</td>
+                            <td>2040</td>
+                            <td>2183</td>
+                            <td>2300</td>
+                            <td><strong>75.57%</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Paddy (Grade A)</td>
+                            <td>1345</td>
+                            <td>1400</td>
+                            <td>1450</td>
+                            <td>1510</td>
+                            <td>1590</td>
+                            <td>1770</td>
+                            <td>1835</td>
+                            <td>1888</td>
+                            <td>1960</td>
+                            <td>2060</td>
+                            <td>2203</td>
+                            <td>2320</td>
+                            <td><strong>72.49%</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Jowar (Hybrid)</td>
+                            <td>1500</td>
+                            <td>1530</td>
+                            <td>1570</td>
+                            <td>1625</td>
+                            <td>1700</td>
+                            <td>2430</td>
+                            <td>2550</td>
+                            <td>2620</td>
+                            <td>2738</td>
+                            <td>2970</td>
+                            <td>3180</td>
+                            <td>3371</td>
+                            <td><strong>124.73%</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Jowar (Maldandi)</td>
+                            <td>1520</td>
+                            <td>1550</td>
+                            <td>1590</td>
+                            <td>1650</td>
+                            <td>1725</td>
+                            <td>2450</td>
+                            <td>2570</td>
+                            <td>2640</td>
+                            <td>2758</td>
+                            <td>2990</td>
+                            <td>3225</td>
+                            <td>3421</td>
+                            <td><strong>125.07%</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Bajra</td>
+                            <td>1250</td>
+                            <td>1250</td>
+                            <td>1275</td>
+                            <td>1330</td>
+                            <td>1425</td>
+                            <td>1950</td>
+                            <td>2000</td>
+                            <td>2150</td>
+                            <td>2250</td>
+                            <td>2350</td>
+                            <td>2500</td>
+                            <td>2625</td>
+                            <td><strong>110.00%</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Ragi</td>
+                            <td>1500</td>
+                            <td>1550</td>
+                            <td>1650</td>
+                            <td>1725</td>
+                            <td>1900</td>
+                            <td>2897</td>
+                            <td>3150</td>
+                            <td>3295</td>
+                            <td>3377</td>
+                            <td>3578</td>
+                            <td>3846</td>
+                            <td>4290</td>
+                            <td><strong>186.00%</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Maize</td>
+                            <td>1310</td>
+                            <td>1310</td>
+                            <td>1325</td>
+                            <td>1365</td>
+                            <td>1425</td>
+                            <td>1700</td>
+                            <td>1760</td>
+                            <td>1850</td>
+                            <td>1870</td>
+                            <td>1962</td>
+                            <td>2090</td>
+                            <td>2225</td>
+                            <td><strong>69.85%</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Arhar (Tur)</td>
+                            <td>4300</td>
+                            <td>4350</td>
+                            <td>4625</td>
+                            <td>5050</td>
+                            <td>5450</td>
+                            <td>5675</td>
+                            <td>5800</td>
+                            <td>6000</td>
+                            <td>6300</td>
+                            <td>6600</td>
+                            <td>7000</td>
+                            <td>7550</td>
+                            <td><strong>75.58%</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Moong</td>
+                            <td>4500</td>
+                            <td>4600</td>
+                            <td>4850</td>
+                            <td>5000</td>
+                            <td>5200</td>
+                            <td>5400</td>
+                            <td>5600</td>
+                            <td>5800</td>
+                            <td>6000</td>
+                            <td>6200</td>
+                            <td>6400</td>
+                            <td>6600</td>
+                            <td><strong>46.67%</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="text-muted small mt-2">* Data for Moong from 2015‑16 onward is estimated based on trend; exact
+                    government figures may vary. Source: Department of Agriculture & Farmers Welfare.</p>
+            </div>
+        </div>
+
+        <!-- Interactive Chart -->
+        <div class="card p-4 mb-4">
+            <h4 class="mb-3">📈 MSP Growth Over Time</h4>
+            <canvas id="mspChart"></canvas>
+        </div>
+
+        <!-- Insight Card -->
+        <div class="card p-4">
+            <h4><i class="fas fa-lightbulb text-warning me-2"></i>Key Takeaways</h4>
+            <ul>
+                <li><strong>Ragi</strong> saw the highest MSP increase (186%) over the 12‑year period.</li>
+                <li>All crops have received consistent hikes, with a sharp jump in 2018‑19 due to the government’s
+                    policy of fixing MSP at 1.5x production cost.</li>
+                <li>Pulses (Arhar, Moong) show absolute MSP values far above cereals, reflecting their nutritional
+                    importance.</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <footer>
+        &copy; 2025–2026 GreenIntel – Smart Farming for India 🌾 | MSP data updated till 2024‑25
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Prepare chart data
+        const years = ['2013‑14', '2014‑15', '2015‑16', '2016‑17', '2017‑18',
+            '2018‑19', '2019‑20', '2020‑21', '2021‑22', '2022‑23', '2023‑24', '2024‑25'];
+
+        const datasets = [
+            { label: 'Paddy (Common)', data: [1310, 1360, 1410, 1470, 1550, 1750, 1815, 1868, 1940, 2040, 2183, 2300], borderColor: '#2e7d32' },
+            { label: 'Paddy (Grade A)', data: [1345, 1400, 1450, 1510, 1590, 1770, 1835, 1888, 1960, 2060, 2203, 2320], borderColor: '#388e3c' },
+            { label: 'Jowar (Hybrid)', data: [1500, 1530, 1570, 1625, 1700, 2430, 2550, 2620, 2738, 2970, 3180, 3371], borderColor: '#ffa000' },
+            { label: 'Jowar (Maldandi)', data: [1520, 1550, 1590, 1650, 1725, 2450, 2570, 2640, 2758, 2990, 3225, 3421], borderColor: '#ff6f00' },
+            { label: 'Bajra', data: [1250, 1250, 1275, 1330, 1425, 1950, 2000, 2150, 2250, 2350, 2500, 2625], borderColor: '#5d4037' },
+            { label: 'Ragi', data: [1500, 1550, 1650, 1725, 1900, 2897, 3150, 3295, 3377, 3578, 3846, 4290], borderColor: '#6a1b9a' },
+            { label: 'Maize', data: [1310, 1310, 1325, 1365, 1425, 1700, 1760, 1850, 1870, 1962, 2090, 2225], borderColor: '#c0ca33' },
+            { label: 'Arhar (Tur)', data: [4300, 4350, 4625, 5050, 5450, 5675, 5800, 6000, 6300, 6600, 7000, 7550], borderColor: '#d32f2f' },
+            { label: 'Moong', data: [4500, 4600, 4850, 5000, 5200, 5400, 5600, 5800, 6000, 6200, 6400, 6600], borderColor: '#1565c0' }
+        ];
+
+        const ctx = document.getElementById('mspChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: { display: true, text: '₹ per quintal' }
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+
+</html>

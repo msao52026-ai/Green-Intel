@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Soil Analysis | GreenIntel – Smart Farming Hub</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;600;700&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f6fef3 0%, #eef7ea 100%);
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    .navbar {
+      background: #1b5e20;
+      box-shadow: 0 4px 12px rgba(0, 32, 0, 0.08);
+      padding: 0.8rem 0;
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      font-size: 1.55rem;
+    }
+
+    .navbar-brand i {
+      margin-right: 6px;
+      font-size: 1.6rem;
+    }
+
+    .nav-link {
+      font-weight: 500;
+      margin: 0 4px;
+      transition: all 0.2s;
+      border-radius: 40px;
+      padding: 6px 16px;
+    }
+
+    .nav-link:hover {
+      background: rgba(255, 255, 240, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .nav-link.active {
+      background: #f5f9dc;
+      color: #1b5e20 !important;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    h1 {
+      color: #1f4f2b;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .lead {
+      color: #2c6e2f;
+      font-weight: 500;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.7rem;
+      margin: 2rem 0 1rem;
+    }
+
+    .filter-btn {
+      background: white;
+      border: 1.5px solid #cfe9cf;
+      color: #1f5427;
+      padding: 0.45rem 1.4rem;
+      font-weight: 600;
+      border-radius: 40px;
+      transition: all 0.2s ease;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .filter-btn:hover {
+      background: #d9f0d9;
+      border-color: #2e7d32;
+      transform: translateY(-2px);
+    }
+
+    .filter-btn.active {
+      background: #2e7d32;
+      color: white;
+      border-color: #2e7d32;
+      box-shadow: 0 5px 10px rgba(46, 125, 50, 0.2);
+    }
+
+    .image-wrapper {
+      margin-bottom: 30px;
+      cursor: pointer;
+      animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1) both;
+      transition: transform 0.3s ease, box-shadow 0.4s ease;
+      border-radius: 1.5rem;
+      background: #ffffffdd;
+      box-shadow: 0 12px 24px -12px rgba(0, 32, 0, 0.12);
+      border: 1px solid rgba(110, 160, 70, 0.2);
+      overflow: hidden;
+    }
+
+    @keyframes fadeSlideUp {
+      0% {
+        opacity: 0;
+        transform: translateY(32px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .image-wrapper img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: contain;
+      transition: transform 0.4s, filter 0.3s;
+      background: #fef9e6;
+      display: block;
+      padding: 10px;
+    }
+
+    .image-wrapper:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 24px 36px -14px rgba(30, 70, 20, 0.25);
+      border-color: #9ccc65;
+    }
+
+    .image-wrapper:hover img {
+      transform: scale(1.02);
+    }
+
+    .caption {
+      text-align: center;
+      padding: 14px 10px;
+      font-weight: 600;
+      background: rgba(255, 255, 245, 0.98);
+      color: #1b5e20;
+      font-size: 0.9rem;
+      border-top: 1px solid #e2f0da;
+    }
+
+    .modal-content {
+      border-radius: 1.8rem;
+      border: none;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      background: #f4fff0;
+      border-bottom: 1px solid #c8e6c9;
+    }
+
+    .modal-title {
+      color: #1e5626;
+      font-weight: 700;
+    }
+
+    #downloadBtn {
+      background: #2e7d32;
+      border-radius: 60px;
+      padding: 8px 22px;
+      border: none;
+      font-weight: 500;
+    }
+
+    #downloadBtn:hover {
+      background: #1b5e20;
+      transform: scale(0.97);
+    }
+
+    footer {
+      background: #0f3b12;
+      color: #e0f2e0;
+      text-align: center;
+      padding: 1.4rem;
+      margin-top: 3rem;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .caption {
+        font-size: 0.75rem;
+      }
+
+      .filter-btn {
+        padding: 0.3rem 1rem;
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="{{ url_for('home') }}"><i class="fas fa-seedling text-warning"></i> GREEN Intel</a>
+      <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="mainNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link active" href="{{ url_for('analysis') }}">Soil Analysis</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('supervised') }}">ML Models</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('predict') }}">Predict Crop</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('cube') }}">Cube Gallery</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('msp') }}">MSP Dashboard</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container text-center my-4 my-md-5">
+    <h1 class="display-5 fw-bold">🌾 Soil & Agricultural Insights</h1>
+    <p class="lead fs-5 mt-2">Interactive visualizations · Nutrient profiles · Market trends · Yield analysis</p>
+    <div class="mt-3">
+      <span class="badge bg-success bg-opacity-25 text-dark p-2 px-3 me-2 rounded-pill"><i
+          class="fas fa-chart-simple"></i> 35+ data plots</span>
+      <span class="badge bg-success bg-opacity-25 text-dark p-2 px-3 rounded-pill"><i class="fas fa-filter"></i> dynamic
+        category filter</span>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="filter-group" id="filterButtonGroup">
+      <button class="filter-btn active" data-filter="all"><i class="fas fa-border-all me-1"></i>All</button>
+      <button class="filter-btn" data-filter="soil"><i class="fas fa-earth-asia me-1"></i>Soil</button>
+      <button class="filter-btn" data-filter="weather"><i class="fas fa-cloud-sun-rain me-1"></i>Weather</button>
+      <button class="filter-btn" data-filter="correlation"><i class="fas fa-chart-scatter me-1"></i>Correlation</button>
+      <button class="filter-btn" data-filter="price"><i class="fas fa-coins me-1"></i>Prices</button>
+      <button class="filter-btn" data-filter="crop"><i class="fas fa-seedling me-1"></i>Crops</button>
+      <button class="filter-btn" data-filter="production"><i class="fas fa-chart-line me-1"></i>Production</button>
+    </div>
+  </div>
+
+  <div class="container my-3">
+    <div class="row g-4" id="galleryGrid">
+      {% set plots = [
+      ("AgriculturalProductionAnalysis(India Dataset).png", "Agricultural Production Analysis (India Dataset)",
+      "production"),
+      ("AreavsProductionRelationship.png", "Area vs Production Relationship", "production"),
+      ("Cluster Visualization.png", "Cluster Visualization", "production"),
+      ("Combined Boxplot for Feature Analysis.png", "Combined Boxplot for Feature Analysis", "correlation"),
+      ("Commodity Price Trend Analysis.png", "Commodity Price Trend Analysis", "price"),
+      ("confusion matrix.png", "Confusion Matrix", "correlation"),
+      ("Correlation Heatmap.png", "Correlation Heatmap", "correlation"),
+      ("Count Plot of Crop Types.png", "Count Plot of Crop Types", "crop"),
+      ("Crop Distribution in Uttar Pradesh.png", "Crop Distribution in Uttar Pradesh", "crop"),
+      ("Crop Distribution in Uttarakhand.png", "Crop Distribution in Uttarakhand", "crop"),
+      ("Crop Price Growth Analysis.png", "Crop Price Growth Analysis", "price"),
+      ("DBSCAN.png", "DBSCAN Clustering", "production"),
+      ("Displot for Rainfall Levels.png", "Displot for Rainfall Levels", "weather"),
+      ("Feature Importance.png", "Feature Importance", "crop"),
+      ("Highest Priced Crops (Latest Year.png", "Highest Priced Crops (Latest Year)", "price"),
+      ("Humidity Distribution.png", "Humidity Distribution", "weather"),
+      ("Latest MSP Comparison.png", "Latest MSP Comparison", "price"),
+      ("Low vs High Growth Crops.png", "Low vs High Growth Crops", "price"),
+      ("Multi-Crop Price Comparison.png", "Multi-Crop Price Comparison", "price"),
+      ("Nitrogen (N) Distribution.png", "Nitrogen (N) Distribution", "soil"),
+      ("Percentage Increase in Crop Prices.png", "Percentage Increase in Crop Prices", "price"),
+      ("pH Distribution.png", "pH Distribution", "soil"),
+      ("Phosphorus (P) Distribution.png", "Phosphorus (P) Distribution", "soil"),
+      ("Potassium (K) Distribution.png", "Potassium (K) Distribution", "soil"),
+      ("Price Distribution Analysis.png", "Price Distribution Analysis", "price"),
+      ("Price Stability Analysis.png", "Price Stability Analysis", "price"),
+      ("Rainfall Distribution Plot.png", "Rainfall Distribution Plot", "weather"),
+      ("Season-wise Production Analysis.png", "Season-wise Production Analysis", "production"),
+      ("Swarm Plot – Detailed Data Spread.png", "Swarm Plot – Detailed Data Spread", "correlation"),
+      ("Temperature Distribution.png", "Temperature Distribution", "weather"),
+      ("Top Crops Distribution in India.png", "Top Crops Distribution in India", "crop"),
+      ("Violin Plot – Feature Distribution by Crop.png", "Violin Plot – Feature Distribution by Crop", "correlation"),
+      ("Year-wise Production Trend.png", "Year-wise Production Trend", "production"),
+      ("Yield Analysis (Productivity Insight).png", "Yield Analysis (Productivity Insight)", "production")
+      ] %}
+
+      {% for img, cap, cat in plots %}
+      <div class="col-md-4 col-lg-4 col-sm-6 image-wrapper" data-category="{{ cat }}">
+        <img src="{{ url_for('static', filename='images/' + img) }}" alt="{{ cap }}" data-bs-toggle="modal"
+          data-bs-target="#imgModal" onclick="openModal(this.src, '{{ cap }}')" loading="lazy">
+        <div class="caption"><i class="fas fa-chart-simple me-1"></i> {{ cap }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="modal fade" id="imgModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle">Visualization</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center p-3 p-md-4 bg-light">
+          <img id="modalImg" class="img-fluid rounded-3 shadow" alt="insight preview"
+            style="max-height: 70vh; object-fit: contain;">
+          <div class="mt-4">
+            <a id="downloadBtn" class="btn btn-success btn-sm px-4 py-2" download><i
+                class="fas fa-download me-2"></i>Download Image</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer><i class="fas fa-leaf me-1"></i> GreenIntel – Smart Farming Ecosystem | Data-driven insights for sustainable
+    agriculture © 2026</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function openModal(src, title) {
+      document.getElementById('modalImg').src = src;
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('downloadBtn').href = src;
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const filter = this.getAttribute('data-filter');
+        document.querySelectorAll('.image-wrapper').forEach(wrapper => {
+          wrapper.style.display = (filter === 'all' || wrapper.getAttribute('data-category') === filter) ? 'block' : 'none';
+        });
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+
+</html>

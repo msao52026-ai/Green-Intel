@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Predict Crop – GreenIntel</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <!-- CSRF meta tag -->
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <style>
+    /* your existing CSS (unchanged – keep it as is) */
+    :root {
+      --forest: #1a3d1e;
+      --canopy: #2a5c30;
+      --leaf: #4a8f52;
+      --sprout: #7ec87f;
+      --mist: #e8f5e9;
+      --cream: #faf9f6;
+      --ink: #1c1c1c;
+      --muted: #6b7c6d;
+      --border: rgba(74, 143, 82, 0.18);
+      --radius: 16px;
+      --shadow: 0 4px 32px rgba(26, 61, 30, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-strip {
+      background: var(--forest);
+      padding: 0.65rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-strip::after {
+      content: '';
+      position: absolute;
+      right: -60px;
+      top: -60px;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(126, 200, 127, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .navbar {
+      background: var(--forest);
+      padding: 0.9rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .navbar-brand {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      color: var(--sprout) !important;
+      letter-spacing: -0.01em;
+    }
+
+    .nav-link {
+      color: rgba(255, 255, 255, 0.7) !important;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      padding: 6px 14px !important;
+      border-radius: 40px;
+      transition: all 0.2s;
+    }
+
+    .nav-link:hover {
+      color: #fff !important;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-link.active {
+      color: var(--forest) !important;
+      background: var(--sprout);
+      font-weight: 600;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 3rem auto;
+      padding: 0 1.25rem 4rem;
+    }
+
+    .page-header {
+      margin-bottom: 2.5rem;
+    }
+
+    .page-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      color: var(--forest);
+      line-height: 1.05;
+      margin-bottom: 0.6rem;
+    }
+
+    .page-header h1 em {
+      color: var(--leaf);
+      font-style: italic;
+    }
+
+    .page-header p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 520px;
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 2rem;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+
+    .step-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--muted);
+      transition: all 0.3s;
+    }
+
+    .step.done .step-dot {
+      background: var(--leaf);
+      border-color: var(--leaf);
+      color: white;
+    }
+
+    .step.active .step-dot {
+      background: var(--forest);
+      border-color: var(--forest);
+      color: white;
+    }
+
+    .step-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .card-shell {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--leaf);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .field-group {
+      margin-bottom: 0;
+    }
+
+    .field-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--forest);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 6px;
+    }
+
+    .field-label i {
+      color: var(--leaf);
+      font-size: 0.78rem;
+    }
+
+    .field-wrap {
+      position: relative;
+    }
+
+    .field-input {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 11px 44px 11px 14px;
+      font-size: 0.92rem;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--ink);
+      background: #fcfcfc;
+      transition: all 0.2s;
+      appearance: none;
+    }
+
+    .field-input::placeholder {
+      color: #bcc9bd;
+    }
+
+    .field-input:focus {
+      outline: none;
+      border-color: var(--leaf);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(74, 143, 82, 0.12);
+    }
+
+    .field-input.valid {
+      border-color: var(--sprout);
+    }
+
+    .field-input.invalid {
+      border-color: #e57373;
+      box-shadow: 0 0 0 3px rgba(229, 115, 115, 0.12);
+    }
+
+    .field-status {
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.75rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .field-status.show {
+      opacity: 1;
+    }
+
+    .field-status.ok {
+      color: var(--leaf);
+    }
+
+    .field-status.err {
+      color: #e57373;
+    }
+
+    .field-range {
+      font-size: 0.71rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 4px;
+      border-radius: 4px;
+      background: linear-gradient(to right, var(--leaf) 0%, var(--border) 0%);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--forest);
+      border: 2px solid white;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+    }
+
+    .slider-val {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--forest);
+      min-width: 38px;
+      text-align: right;
+    }
+
+    .npk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 40px;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    .npk-n {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .npk-p {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .npk-k {
+      background: #fff3e0;
+      color: #e65100;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 2rem 0;
+    }
+
+    .btn-predict {
+      background: var(--forest);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 40px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-predict::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, transparent 60%);
+    }
+
+    .btn-predict:hover:not(:disabled) {
+      background: var(--canopy);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(26, 61, 30, 0.25);
+    }
+
+    .btn-predict:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-predict:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn-predict .spinner {
+      display: none;
+    }
+
+    .btn-predict.loading .spinner {
+      display: inline-block;
+    }
+
+    .btn-predict.loading .btn-icon {
+      display: none;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    .btn-reset {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: 50px;
+      padding: 12px 24px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-reset:hover {
+      border-color: var(--leaf);
+      color: var(--forest);
+    }
+
+    .form-progress-wrap {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .form-progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .form-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--leaf), var(--sprout));
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+
+    .result-panel {
+      display: none;
+      margin-top: 2rem;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .result-panel.show {
+      display: block;
+      animation: slideUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) both;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-header {
+      background: var(--forest);
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .result-icon-wrap {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .result-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: rgba(255, 255, 255, 0.55);
+      text-transform: uppercase;
+    }
+
+    .result-crop-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      color: white;
+      line-height: 1.05;
+      margin-top: 2px;
+    }
+
+    .result-body {
+      background: white;
+      padding: 1.5rem 2rem;
+    }
+
+    .conf-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .conf-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .conf-value {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--forest);
+    }
+
+    .conf-bar {
+      height: 6px;
+      background: var(--mist);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 1.2rem;
+    }
+
+    .conf-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--leaf), var(--sprout));
+      transition: width 1s ease 0.3s;
+    }
+
+    .input-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 8px;
+      margin-top: 1rem;
+    }
+
+    .summary-chip {
+      background: var(--mist);
+      border-radius: 10px;
+      padding: 8px 10px;
+      text-align: center;
+    }
+
+    .chip-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--leaf);
+      text-transform: uppercase;
+    }
+
+    .chip-val {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--forest);
+      margin-top: 1px;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-new {
+      background: var(--mist);
+      border: none;
+      border-radius: 40px;
+      padding: 9px 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--forest);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-new:hover {
+      background: #c8e6c9;
+    }
+
+    .btn-pdf {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: 40px;
+      padding: 9px 20px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-pdf:hover {
+      border-color: var(--leaf);
+      color: var(--forest);
+    }
+
+    .toast-error {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.83rem;
+      color: #b91c1c;
+      margin-top: 1.5rem;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toast-error.show {
+      display: flex;
+      animation: slideUp 0.3s ease both;
+    }
+
+    footer {
+      background: var(--forest);
+      color: rgba(255, 255, 255, 0.5);
+      text-align: center;
+      padding: 1.25rem;
+      font-size: 0.8rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 600px) {
+      .card-shell {
+        padding: 1.5rem 1.25rem;
+      }
+
+      .result-header {
+        padding: 1.25rem;
+      }
+
+      .result-body {
+        padding: 1.25rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="{{ url_for('home') }}">
+        <i class="fas fa-seedling me-1" style="font-size:1rem;color:var(--sprout)"></i> GreenIntel
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+        style="border-color:rgba(255,255,255,0.2)">
+        <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="mainNav">
+        <ul class="navbar-nav gap-1">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('analysis') }}">Soil Analysis</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('supervised') }}">ML Models</a></li>
+          <li class="nav-item"><a class="nav-link active" href="{{ url_for('predict') }}">Predict</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('cube') }}">Gallery</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('msp') }}">MSP</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <h1>Crop <em>intelligence</em><br>at your fingertips</h1>
+      <p>Enter your soil and climate data — our Random Forest model (99.24% accuracy) recommends the best crop for your
+        field.</p>
+    </div>
+
+    <!-- stepper -->
+    <div class="stepper" id="stepper" aria-label="Form completion progress">
+      <div class="step active" id="step1">
+        <div class="step-dot">1</div><span>Nutrients</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" id="step2">
+        <div class="step-dot">2</div><span>Climate</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" id="step3">
+        <div class="step-dot">3</div><span>Result</span>
+      </div>
+    </div>
+
+    <div class="card-shell">
+      <div class="form-progress-wrap">
+        <div class="form-progress-label">
+          <span>Fields completed</span>
+          <span id="progressCount">0 / 7</span>
+        </div>
+        <div class="form-progress-bar">
+          <div class="form-progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <form id="predictForm" novalidate>
+        <!-- No hidden CSRF field needed; we'll send via meta -->
+        <div class="section-label"><i class="fas fa-flask"></i> Soil nutrients</div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4 field-group">
+            <span class="npk-badge npk-n">N</span>
+            <div class="field-label"><i class="fas fa-atom"></i> Nitrogen</div>
+            <div class="field-wrap">
+              <input type="number" class="field-input" id="N" name="N" placeholder="e.g. 50" min="0" max="140" step="1"
+                aria-label="Nitrogen value in kg per hectare" autocomplete="off">
+              <span class="field-status" id="N-status"></span>
+            </div>
+            <div class="field-range">0 – 140 kg/ha</div>
+            <div class="slider-wrap">
+              <input type="range" min="0" max="140" value="0" id="N-slider" aria-label="Nitrogen slider" tabindex="-1">
+              <span class="slider-val" id="N-sliderVal">0</span>
+            </div>
+          </div>
+          <div class="col-md-4 field-group">
+            <span class="npk-badge npk-p">P</span>
+            <div class="field-label"><i class="fas fa-atom"></i> Phosphorus</div>
+            <div class="field-wrap">
+              <input type="number" class="field-input" id="P" name="P" placeholder="e.g. 42" min="0" max="145" step="1"
+                aria-label="Phosphorus value in kg per hectare" autocomplete="off">
+              <span class="field-status" id="P-status"></span>
+            </div>
+            <div class="field-range">0 – 145 kg/ha</div>
+            <div class="slider-wrap">
+              <input type="range" min="0" max="145" value="0" id="P-slider" aria-label="Phosphorus slider"
+                tabindex="-1">
+              <span class="slider-val" id="P-sliderVal">0</span>
+            </div>
+          </div>
+          <div class="col-md-4 field-group">
+            <span class="npk-badge npk-k">K</span>
+            <div class="field-label"><i class="fas fa-atom"></i> Potassium</div>
+            <div class="field-wrap">
+              <input type="number" class="field-input" id="K" name="K" placeholder="e.g. 43" min="0" max="205" step="1"
+                aria-label="Potassium value in kg per hectare" autocomplete="off">
+              <span class="field-status" id="K-status"></span>
+            </div>
+            <div class="field-range">0 – 205 kg/ha</div>
+            <div class="slider-wrap">
+              <input type="range" min="0" max="205" value="0" id="K-slider" aria-label="Potassium slider" tabindex="-1">
+              <span class="slider-val" id="K-sliderVal">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-label"><i class="fas fa-cloud-sun"></i> Climate & soil properties</div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6 field-group">
+            <div class="field-label"><i class="fas fa-temperature-high"></i> Temperature</div>
+            <div class="field-wrap">
+              <input type="number" class="field-input" id="temperature" name="temperature" placeholder="e.g. 26.5"
+                min="0" max="50" step="0.1" aria-label="Temperature in degrees Celsius" autocomplete="off">
+              <span class="field-status" id="temperature-status"></span>
+            </div>
+            <div class="field-range">0 – 50 °C</div>
+          </div>
+          <div class="col-md-6 field-group">
+            <div class="field-label"><i class="fas fa-droplet"></i> Humidity</div>
+            <div class="field-wrap">
+              <input type="number" class="field-input" id="humidity" name="humidity" placeholder="e.g. 80" min="0"
+                max="100" step="1" aria-label="Relative humidity percentage" autocomplete="off">
+              <span class="field-status" id="humidity-status"></span>
+            </div>
+            <div class="field-range">0 – 100 %</div>
+          </div>
+          <div class="col-md-6 field-group">
+            <div class="field-label"><i class="fas fa-vial"></i> pH Value</div>
+            <div class="field-wrap">
+              <input type="number" class="field-input" id="ph" name="ph" placeholder="e.g. 6.5" min="0" max="14"
+                step="0.1" aria-label="Soil pH value" autocomplete="off">
+              <span class="field-status" id="ph-status"></span>
+            </div>
+            <div class="field-range">0 – 14 (acidic → alkaline)</div>
+          </div>
+          <div class="col-md-6 field-group">
+            <div class="field-label"><i class="fas fa-cloud-rain"></i> Rainfall</div>
+            <div class="field-wrap">
+              <input type="number" class="field-input" id="rainfall" name="rainfall" placeholder="e.g. 1200" min="0"
+                max="3000" step="1" aria-label="Annual rainfall in millimetres" autocomplete="off">
+              <span class="field-status" id="rainfall-status"></span>
+            </div>
+            <div class="field-range">0 – 3000 mm/year</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <button type="submit" class="btn-predict" id="submitBtn" aria-label="Submit form to predict crop">
+            <span class="btn-icon"><i class="fas fa-leaf" style="font-size:0.85rem"></i></span>
+            <span class="spinner" role="status" aria-hidden="true"></span>
+            Predict crop
+          </button>
+          <button type="button" class="btn-reset" id="resetBtn" aria-label="Reset all form fields">
+            <i class="fas fa-rotate-left me-1" style="font-size:0.8rem"></i> Reset
+          </button>
+          <span id="validationHint" style="font-size:0.78rem;color:var(--muted);margin-left:auto">
+            Fill all 7 fields to enable prediction
+          </span>
+        </div>
+      </form>
+
+      <div class="result-panel" id="resultPanel" role="region" aria-live="polite" aria-label="Prediction result">
+        <div class="result-header">
+          <div class="result-icon-wrap" id="resultEmoji">🌾</div>
+          <div>
+            <div class="result-label">Recommended crop</div>
+            <div class="result-crop-name" id="resultCropName">—</div>
+          </div>
+        </div>
+        <div class="result-body">
+          <div class="conf-row">
+            <span class="conf-label">Model confidence</span>
+            <span class="conf-value" id="confVal">—</span>
+          </div>
+          <div class="conf-bar">
+            <div class="conf-fill" id="confFill" style="width:0%"></div>
+          </div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem">Input parameters used for this
+            prediction:</div>
+          <div class="input-summary" id="inputSummary"></div>
+          <div class="result-actions">
+            <button class="btn-new" onclick="resetForm()"><i class="fas fa-plus me-1" style="font-size:0.78rem"></i> New
+              prediction</button>
+            <button class="btn-pdf" onclick="window.print()"><i class="fas fa-download me-1"
+                style="font-size:0.78rem"></i> Save / print result</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="toast-error" id="errorToast" role="alert" aria-live="assertive">
+        <i class="fas fa-circle-exclamation" style="font-size:1rem;flex-shrink:0"></i>
+        <span id="errorMsg">Something went wrong. Please try again.</span>
+      </div>
+    </div>
+  </div>
+
+  <footer><i class="fas fa-leaf me-1"></i> GreenIntel · AI for Sustainable Agriculture · © 2026</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function () {
+      // Get CSRF token from meta tag
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+      const FIELDS = [
+        { id: 'N', min: 0, max: 140, dec: 0, label: 'N', unit: 'kg/ha' },
+        { id: 'P', min: 0, max: 145, dec: 0, label: 'P', unit: 'kg/ha' },
+        { id: 'K', min: 0, max: 205, dec: 0, label: 'K', unit: 'kg/ha' },
+        { id: 'temperature', min: 0, max: 50, dec: 1, label: 'Temp', unit: '°C' },
+        { id: 'humidity', min: 0, max: 100, dec: 0, label: 'Humidity', unit: '%' },
+        { id: 'ph', min: 0, max: 14, dec: 1, label: 'pH', unit: '' },
+        { id: 'rainfall', min: 0, max: 3000, dec: 0, label: 'Rain', unit: 'mm' }
+      ];
+
+      const CROP_EMOJI = {
+        rice: '🌾', wheat: '🌾', maize: '🌽', jute: '🌿', coffee: '☕', cotton: '🌼',
+        kidneybeans: '🫘', pigeonpeas: '🌱', mothbeans: '🌱', mungbean: '🌱',
+        blackgram: '🌱', lentil: '🌱', pomegranate: '🍎', banana: '🍌', mango: '🥭',
+        grapes: '🍇', watermelon: '🍉', muskmelon: '🍈', apple: '🍎', orange: '🍊',
+        papaya: '🍈', coconut: '🥥', chickpea: '🌰'
+      };
+
+      // Slider sync
+      ['N', 'P', 'K'].forEach(id => {
+        const inp = document.getElementById(id);
+        const slider = document.getElementById(id + '-slider');
+        const valEl = document.getElementById(id + '-sliderVal');
+        slider.addEventListener('input', () => {
+          inp.value = slider.value;
+          valEl.textContent = slider.value;
+          updateSliderFill(slider);
+          validateField(inp);
+          updateProgress();
+        });
+        inp.addEventListener('input', () => {
+          let v = parseFloat(inp.value);
+          if (!isNaN(v)) {
+            v = Math.min(Math.max(v, parseFloat(slider.min)), parseFloat(slider.max));
+            slider.value = v;
+            valEl.textContent = v;
+            updateSliderFill(slider);
+          }
+          validateField(inp);
+          updateProgress();
+        });
+      });
+
+      ['temperature', 'humidity', 'ph', 'rainfall'].forEach(id => {
+        const inp = document.getElementById(id);
+        inp.addEventListener('input', () => { validateField(inp); updateProgress(); });
+      });
+
+      function updateSliderFill(slider) {
+        const pct = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+        slider.style.background = `linear-gradient(to right, var(--leaf) ${pct}%, var(--border) ${pct}%)`;
+      }
+
+      function validateField(inp) {
+        const f = FIELDS.find(x => x.id === inp.id);
+        if (!f) return false;
+        const v = parseFloat(inp.value);
+        const statusEl = document.getElementById(inp.id + '-status');
+        if (inp.value === '' || isNaN(v)) {
+          inp.classList.remove('valid', 'invalid');
+          if (statusEl) { statusEl.className = 'field-status'; statusEl.textContent = ''; }
+          return false;
+        }
+        if (v < f.min || v > f.max) {
+          inp.classList.add('invalid'); inp.classList.remove('valid');
+          if (statusEl) { statusEl.className = 'field-status err show'; statusEl.textContent = `${f.min}–${f.max}`; }
+          return false;
+        }
+        inp.classList.add('valid'); inp.classList.remove('invalid');
+        if (statusEl) { statusEl.className = 'field-status ok show'; statusEl.innerHTML = '&#10003;'; }
+        return true;
+      }
+
+      function updateProgress() {
+        let filled = 0;
+        FIELDS.forEach(f => {
+          const inp = document.getElementById(f.id);
+          const v = parseFloat(inp.value);
+          if (inp.value !== '' && !isNaN(v) && v >= f.min && v <= f.max) filled++;
+        });
+        const pct = (filled / FIELDS.length) * 100;
+        document.getElementById('progressFill').style.width = pct + '%';
+        document.getElementById('progressCount').textContent = `${filled} / ${FIELDS.length}`;
+        // stepper
+        if (filled === 0) setStepActive(1);
+        else if (filled < 4) setStepActive(1);
+        else if (filled < 7) setStepActive(2);
+        else setStepActive(2);
+        const hint = document.getElementById('validationHint');
+        const btn = document.getElementById('submitBtn');
+        if (filled === 7) {
+          btn.disabled = false;
+          hint.textContent = 'Ready to predict!';
+          hint.style.color = 'var(--leaf)';
+        } else {
+          btn.disabled = true;
+          hint.textContent = `Fill all 7 fields to enable prediction (${7 - filled} remaining)`;
+          hint.style.color = 'var(--muted)';
+        }
+      }
+
+      function setStepActive(n) {
+        [1, 2, 3].forEach(i => {
+          const el = document.getElementById('step' + i);
+          el.classList.remove('active', 'done');
+          if (i < n) el.classList.add('done');
+          else if (i === n) el.classList.add('active');
+        });
+      }
+
+      document.getElementById('submitBtn').disabled = true;
+
+      // Submit handler with CSRF
+      document.getElementById('predictForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        let allOk = true;
+        FIELDS.forEach(f => { if (!validateField(document.getElementById(f.id))) allOk = false; });
+        if (!allOk) return;
+
+        const btn = document.getElementById('submitBtn');
+        btn.classList.add('loading');
+        btn.disabled = true;
+        hideError();
+        hideResult();
+
+        const data = {};
+        FIELDS.forEach(f => { data[f.id] = parseFloat(document.getElementById(f.id).value); });
+
+        try {
+          const response = await fetch('{{ url_for("predict") }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': csrfToken   // ✅ CSRF token added here
+            },
+            body: JSON.stringify(data)
+          });
+          if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`Server error ${response.status}: ${errText}`);
+          }
+          const json = await response.json();
+          if (json.error) { showError(json.error); return; }
+          showResult(json.prediction, json.confidence, data);
+          setStepActive(3);
+        } catch (err) {
+          showError('Could not reach the prediction server. Please check your connection and try again. ' + err.message);
+          console.error(err);
+        } finally {
+          btn.classList.remove('loading');
+          btn.disabled = false;
+        }
+      });
+
+      function showResult(crop, confidence, inputs) {
+        const panel = document.getElementById('resultPanel');
+        const emoji = CROP_EMOJI[crop?.toLowerCase()] || '🌾';
+        const conf = confidence ? parseFloat(confidence) : null;
+        document.getElementById('resultEmoji').textContent = emoji;
+        document.getElementById('resultCropName').textContent = crop || 'Unknown';
+        document.getElementById('confVal').textContent = conf ? conf.toFixed(1) + '%' : 'N/A';
+        const fill = document.getElementById('confFill');
+        fill.style.width = '0%';
+        setTimeout(() => { fill.style.width = (conf || 0) + '%'; }, 50);
+        const summary = document.getElementById('inputSummary');
+        summary.innerHTML = '';
+        FIELDS.forEach(f => {
+          const chip = document.createElement('div');
+          chip.className = 'summary-chip';
+          chip.innerHTML = `<div class="chip-label">${f.label}</div><div class="chip-val">${inputs[f.id]}${f.unit ? ' ' + f.unit : ''}</div>`;
+          summary.appendChild(chip);
+        });
+        panel.classList.add('show');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      function hideResult() { document.getElementById('resultPanel').classList.remove('show'); }
+      function showError(msg) { const el = document.getElementById('errorToast'); document.getElementById('errorMsg').textContent = msg; el.classList.add('show'); }
+      function hideError() { document.getElementById('errorToast').classList.remove('show'); }
+
+      window.resetForm = function () {
+        document.getElementById('predictForm').reset();
+        ['N', 'P', 'K'].forEach(id => {
+          const s = document.getElementById(id + '-slider');
+          s.value = 0;
+          document.getElementById(id + '-sliderVal').textContent = '0';
+          updateSliderFill(s);
+        });
+        FIELDS.forEach(f => {
+          const inp = document.getElementById(f.id);
+          inp.classList.remove('valid', 'invalid');
+          const st = document.getElementById(f.id + '-status');
+          if (st) { st.className = 'field-status'; st.textContent = ''; }
+        });
+        hideResult(); hideError(); updateProgress();
+      };
+      document.getElementById('resetBtn').addEventListener('click', resetForm);
+      updateProgress(); // initial
+    })();
+  </script>
+</body>
+
+</html>
